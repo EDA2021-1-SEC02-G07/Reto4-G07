@@ -1,28 +1,7 @@
-﻿"""
- * Copyright 2020, Departamento de sistemas y Computación, Universidad
- * de Los Andes
- *
- *
- * Desarrolado para el curso ISIS1225 - Estructuras de Datos y Algoritmos
- *
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along withthis program.  If not, see <http://www.gnu.org/licenses/>.
- """
-
-import config as cf
+﻿import config as cf
 import sys
 import controller
+from DISClib.ADT.graph import gr
 from DISClib.ADT import list as lt
 assert cf
 
@@ -35,12 +14,19 @@ operación solicitada
 """
 
 def printMenu():
-    print("Bienvenido")
-    print("1- Cargar información en el catálogo")
-    print("2- ")
+    print("\nBienvenido")
+    print("1- Cargar información en el catálogo.")
+    print("2- Identificar clústeres de comunicación.")
+    print("3- Identificar puntos de conexión críticos")
+    print("4- Identificar ruta de menor distancia.")
+    print("5- Identificar infraesrtuctira crítica.")
+    print("6- Análisis de fallas.")
+    print("7- Identificar mejores canales de transmisión.")
+    print("8- Identificar mejor ruta de comunicación.")
+    print("9- Graficar.")
 
 catalog = None
-
+internetFile = 'landing_points.csv'
 """
 Menu principal
 """
@@ -48,7 +34,20 @@ while True:
     printMenu()
     inputs = input('Seleccione una opción para continuar\n')
     if int(inputs[0]) == 1:
+        analyzer = controller.init()
+        analyzer = controller.loadData(analyzer, internetFile)
         print("Cargando información de los archivos ....")
+        vertexN = gr.numVertices(analyzer['cables'])
+        edgesN = gr.numEdges(analyzer['cables'])
+        vertex = lt.firstElement(gr.vertices(analyzer['cables']))
+        edges = gr.adjacentEdges(analyzer['cables'], vertex)
+        edgesL = []
+        for x in range(lt.size(edges)):
+            edgesL.append(lt.getElement(edges, x))
+        adjV = gr.adjacentEdges(analyzer['cables'], vertex)
+        print(f'\nNúmero de vértices: {vertexN}.')
+        print(f'Número de arcos: {edgesN}.')
+        print(f'En primer vértice es {vertex}, sus arcos son {edgesL} y sus adyacentes son {adjV}')
 
     elif int(inputs[0]) == 2:
         pass
