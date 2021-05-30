@@ -12,20 +12,20 @@ def init():
     analyzer = model.newAnalyzer()
     return analyzer
 
-def loadData(analyzer, internetFile):
-    internetFile = cf.data_dir + internetFile
-    input_file = csv.DictReader(open(internetFile, encoding="utf-8"),
+def loadData(analyzer, pointFile, connectFile, countryFile):
+    pointFile = cf.data_dir + pointFile
+    connectFile = cf.data_dir + connectFile
+    countryFile = cf.data_dir + countryFile
+
+    input_file1 = csv.DictReader(open(pointFile, encoding="utf-8"),
                                 delimiter=",")
-    lastPoint = None
-    for point in input_file:
-        if lastPoint is not None:
-            '''samePoint = lastPoint['landing_point_id'] == point['landing_point_id']
-            sameLati = lastPoint['latitude'] == point['latitude']
-            sameLongi = lastPoint['longitude'] == point['longitude']
-            if not samePoint and not sameLati and not sameLongi:'''
-            model.addPointConnection(analyzer, lastPoint, point)
-        lastPoint = point
+    for point in input_file1:
+        model.addLandingPoint(analyzer, point)
     
+    input_file2 = csv.DictReader(open(connectFile, encoding="utf-8"),
+                                delimiter=",")
+    for cable in input_file2:
+        model.addCable(analyzer, cable)
     return analyzer
 # Funciones para la carga de datos
 

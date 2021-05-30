@@ -2,6 +2,8 @@
 import sys
 import controller
 from DISClib.ADT.graph import gr
+from DISClib.ADT import map as mp
+from DISClib.DataStructures import mapentry as me
 from DISClib.ADT import list as lt
 assert cf
 
@@ -26,7 +28,9 @@ def printMenu():
     print("9- Graficar.")
 
 catalog = None
-internetFile = 'landing_points.csv'
+pointFile = 'landing_points.csv'
+connectFile = 'connections.csv'
+countryFile = 'countries.csv'
 """
 Menu principal
 """
@@ -35,19 +39,15 @@ while True:
     inputs = input('Seleccione una opción para continuar\n')
     if int(inputs[0]) == 1:
         analyzer = controller.init()
-        analyzer = controller.loadData(analyzer, internetFile)
+        analyzer = controller.loadData(analyzer, pointFile, connectFile, countryFile)
         print("Cargando información de los archivos ....")
-        vertexN = gr.numVertices(analyzer['cables'])
-        edgesN = gr.numEdges(analyzer['cables'])
+        LPs = gr.numVertices(analyzer['cables'])
+        ARCs = gr.numEdges(analyzer['cables'])
         vertex = lt.firstElement(gr.vertices(analyzer['cables']))
-        edges = gr.adjacentEdges(analyzer['cables'], vertex)
-        edgesL = []
-        for x in range(lt.size(edges)):
-            edgesL.append(lt.getElement(edges, x))
-        adjV = gr.adjacentEdges(analyzer['cables'], vertex)
-        print(f'\nNúmero de vértices: {vertexN}.')
-        print(f'Número de arcos: {edgesN}.')
-        print(f'En primer vértice es {vertex}, sus arcos son {edgesL} y sus adyacentes son {adjV}')
+        infoV = me.getValue(mp.get(analyzer['landingPoints'], vertex))
+        print(f'\nEl número total de Landing Points es {LPs}.')
+        print(f'El número total de conexiones es {ARCs}.')
+        print(f'En primer Landing Point tiene el identificador {vertex}.\nNombre: {infoV[2]}.\nID: {infoV[1]}.\nLatitud: {infoV[0][1]}.\nLongitud: {infoV[0][0]}.')
 
     elif int(inputs[0]) == 2:
         pass

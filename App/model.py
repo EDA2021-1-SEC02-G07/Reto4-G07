@@ -17,11 +17,16 @@ def newAnalyzer():
     #try:
         analyzer = {
                     'landingPoints': None,
+                    'cableNames': None,
                     'cables': None}
 
         analyzer['landingPoints'] = mp.newMap(numelements=1400,
-                                     maptype='PROBING',
-                                     comparefunction=LPids)
+                                    maptype='PROBING',
+                                    comparefunction=LPids)
+
+        analyzer['cableNames'] = mp.newMap(numelements=1400,
+                                    maptype='PROBING',
+                                    comparefunction=LPids)
 
         analyzer['cables'] = gr.newGraph(datastructure='ADJ_LIST',
                                               directed=False,
@@ -31,67 +36,53 @@ def newAnalyzer():
     #except Exception as exp:
         #error.reraise(exp, 'model:newAnalyzer')
 
-def addPointConnection(analyzer, lastPoint, point):
-    #try:
-        origin = formatVertex(lastPoint)
-        destination = formatVertex(point)
-        distance = distanceFormat(lastPoint, point)
-        distanceHaversine = haversine(distance[0], distance[1])
-        addPoint(analyzer, origin)
-        addPoint(analyzer, destination)
-        addCable(analyzer, origin, destination, distanceHaversine)
-        
-        return analyzer
-    #except Exception as exp:
-        #error.reraise(exp, 'model:addPointConnection')
 
+def addLandingPoint(analyzer, point):
+    pointID = point['landing_point_id']
+    coord = coordFormat(point)
+    #try:
+    gr.insertVertex(analyzer['cables'], pointID)
+
+    mp.put(analyzer['landingPoints'], pointID, [coord, point['id'], point['name']])
+    
+    return analyzer
+    #except Exception as exp:
+        #error.reraise(exp, 'model:addPoint')
+
+
+def addCable(analyzer, cable):
+    OG = cable['\ufefforigin']
+    origin, destination, lenght = OG, cable['destination'], distFormat(cable['cable_length'])
+
+    if not mp.contains(analyzer['cableNames'], cable['cable_id']):
+        mp.put(analyzer['cableNames'], cable['cable_id'],
+                                [[(OG, cable['destination'])], cable['cable_rfs'], cable['owners'], cable['capacityTBPS']])
+    if mp.contains(analyzer['cableNames'], cable['cable_id']):
+        value = me.getValue(mp.get(analyzer['cableNames'], cable['cable_id']))
+        value[0].append((OG, cable['destination']))
+        mp.put(analyzer['cableNames'], cable['cable_id'], value)
+
+    edge = gr.getEdge(analyzer['cables'], origin, destination)
+    if edge is None:
+        gr.addEdge(analyzer['cables'], origin, destination, lenght)
+
+    return analyzer
+
+    
 
 # Funciones para agregar informacion al catalogo
 
 # Funciones para creacion de datos
-def formatVertex(point):
-    name = point['landing_point_id'] + '-'
-    name = name + point['id']
-    return name
+def coordFormat(point):
+    lon, lat = float(point['longitude']), float(point['latitude'])
+    return [lon, lat]
 
-def distanceFormat(lastPoint, point):
-    point['latitude'] = float(point['latitude'])
-    point['longitude'] = float(point['longitude'])
-    lastPoint['latitude'] = float(lastPoint['latitude'])
-    lastPoint['longitude'] = float(lastPoint['longitude'])
+def distFormat(length):
+    length = length.replace('km', '')
+    length = length.strip()
+    return length
 
-    if abs(point['latitude']) > 90:
-        point['latitude'] = point['latitude']/10
-        if abs(point['latitude']) > 90:
-            distanceFormat(lastPoint, point)
-    if abs(point['longitude']) > 180:
-        point['longitude'] = point['longitude']/10
-        if abs(point['longitude']) > 180:
-            distanceFormat(lastPoint, point)
-    
-    if abs(lastPoint['latitude']) > 90:
-        lastPoint['latitude'] = lastPoint['latitude']/10
-        if abs(lastPoint['latitude']) > 90:
-            distanceFormat(lastPoint, point)
-    if abs(lastPoint['longitude']) > 180:
-        lastPoint['longitude'] = lastPoint['longitude']/10
-        if abs(lastPoint['longitude']) > 180:
-            distanceFormat(lastPoint, point)
-    return [lastPoint['longitude'], lastPoint['latitude']], [point['longitude'], point['latitude']]
 
-def addPoint(analyzer, pointID):
-    #try:
-        if not gr.containsVertex(analyzer['cables'], pointID):
-            gr.insertVertex(analyzer['cables'], pointID)
-        return analyzer
-    #except Exception as exp:
-        #error.reraise(exp, 'model:addPoint')
-
-def addCable(analyzer, origin, destination, distance):
-    edge = gr.getEdge(analyzer['cables'], origin, destination)
-    if edge is None:
-        gr.addEdge(analyzer['cables'], origin, destination, distance)
-    return analyzer
     
 def haversine(coord1, coord2):
     import math
