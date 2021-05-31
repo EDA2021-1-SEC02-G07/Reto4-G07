@@ -26,8 +26,20 @@ def loadData(analyzer, pointFile, connectFile, countryFile):
                                 delimiter=",")
     for cable in input_file2:
         model.addCable(analyzer, cable)
+
+    input_file3 = csv.DictReader(open(countryFile, encoding="utf-8"),
+                                delimiter=",")
+    contador = 0                            
+    for pais in input_file3:
+        model.addPais(analyzer, pais)
+        contador+=1
+    print(f'Se cargaron {contador} países')
+    
     return analyzer
 # Funciones para la carga de datos
+def callClusterL(analyzer, point1, point2):
+    ans = model.clusterL(analyzer, point1, point2)
+    
 
 # Funciones de ordenamiento
 

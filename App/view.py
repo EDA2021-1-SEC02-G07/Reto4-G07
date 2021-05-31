@@ -39,18 +39,25 @@ while True:
     inputs = input('Seleccione una opción para continuar\n')
     if int(inputs[0]) == 1:
         analyzer = controller.init()
-        analyzer = controller.loadData(analyzer, pointFile, connectFile, countryFile)
         print("Cargando información de los archivos ....")
+        analyzer = controller.loadData(analyzer, pointFile, connectFile, countryFile)
         LPs = gr.numVertices(analyzer['cables'])
         ARCs = gr.numEdges(analyzer['cables'])
         vertex = lt.firstElement(gr.vertices(analyzer['cables']))
         infoV = me.getValue(mp.get(analyzer['landingPoints'], vertex))
-        print(f'\nEl número total de Landing Points es {LPs}.')
+        last = lt.lastElement(mp.keySet(analyzer['paises']))
+        infoL = mp.get(analyzer['paises'], last)
+        infoL = infoL['value']
+        print(infoL)
+        print(f'El número total de Landing Points es {LPs}.')
         print(f'El número total de conexiones es {ARCs}.')
         print(f'En primer Landing Point tiene el identificador {vertex}.\nNombre: {infoV[2]}.\nID: {infoV[1]}.\nLatitud: {infoV[0][1]}.\nLongitud: {infoV[0][0]}.')
-
+        print(f'El último país cargado es: {last}. \nPoblación: {infoL[2]}. \nUsuarios de internet: {infoL[1]}')
+    
     elif int(inputs[0]) == 2:
-        pass
+        point1 = input("Ingrese el primer LandingPoint: ")
+        point2 = input("Ingrese el segundo landingPoint: ")
+        ans = controller.callClusterL(analyzer, point1, point2)
 
     else:
         sys.exit(0)

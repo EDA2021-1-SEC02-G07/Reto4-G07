@@ -32,6 +32,7 @@ def newAnalyzer():
                                               directed=False,
                                               size=1400,
                                               comparefunction=LPids)
+        analyzer['paises'] = mp.newMap(numelements=237, maptype='PROBING', comparefunction= LPids)
         return analyzer
     #except Exception as exp:
         #error.reraise(exp, 'model:newAnalyzer')
@@ -68,7 +69,14 @@ def addCable(analyzer, cable):
 
     return analyzer
 
+def addPais(analyzer, pais):
     
+    if not mp.contains(analyzer['paises'], pais['CountryName']):
+        mp.put(analyzer['paises'], pais['CountryName'], [pais['CapitalName'], pais['Internet users'], pais['Population']])
+        #primera posiciòn contiene capital, segunda numero de usuarios de internet y la tercera contiene poblaciòn 
+        
+  
+
 
 # Funciones para agregar informacion al catalogo
 
@@ -111,6 +119,20 @@ def haversine(coord1, coord2):
 
     return km
 # Funciones de consulta
+
+def clusterL(analyzer, point1, point2):
+
+    data = mp.keySet(analyzer['cableNames'])
+    for cable in lt.iterator(data):
+        print(cable)
+        info = mp.get(analyzer['cableNames'], cable)
+        print(info)
+
+
+def distPais(analyzer, A, B):
+    pass
+    
+
 
 # Funciones utilizadas para comparar elementos dentro de una lista
 def LPids(LPid, keyvaluestop):
