@@ -1,4 +1,5 @@
-﻿import config as cf
+﻿from DISClib.DataStructures.chaininghashtable import contains
+import config as cf
 from DISClib.ADT.graph import gr
 from DISClib.ADT import list as lt
 from DISClib.ADT import map as mp
@@ -14,6 +15,7 @@ los mismos.
 
 # Construccion de modelos
 def newAnalyzer():
+
     #try:
         analyzer = {
                     'landingPoints': None,
@@ -32,7 +34,14 @@ def newAnalyzer():
                                               directed=False,
                                               size=1400,
                                               comparefunction=LPids)
+
         analyzer['paises'] = mp.newMap(numelements=237, maptype='PROBING', comparefunction= LPids)
+
+        analyzer['distancias'] = gr. newGraph(datastructure='ADJ_LIST',
+                                              directed=False,
+                                              size=1400,
+                                              comparefunction=LPids)
+        
         return analyzer
     #except Exception as exp:
         #error.reraise(exp, 'model:newAnalyzer')
@@ -40,6 +49,7 @@ def newAnalyzer():
 
 def addLandingPoint(analyzer, point):
     pointID = point['landing_point_id']
+   
     coord = coordFormat(point)
     #try:
     gr.insertVertex(analyzer['cables'], pointID)
@@ -76,6 +86,9 @@ def addPais(analyzer, pais):
         #primera posiciòn contiene capital, segunda numero de usuarios de internet y la tercera contiene poblaciòn 
         
   
+def addDistance(analyzer, cable):
+    #añadir distancia y asi poder agregar un grafo con peso
+    print(cable)
 
 
 # Funciones para agregar informacion al catalogo
@@ -131,7 +144,24 @@ def clusterL(analyzer, point1, point2):
 
 def distPais(analyzer, A, B):
     pass
+    data = mp.valueSet(analyzer['landingPoints'])
+    grafo = analyzer['cables']
+    #distancia de ciudades a 
     
+    for info in lt.iterator(data):
+        ubi = info[2]
+        ubi = ubi.lower()
+        if A in ubi:
+            cordi = info[0]
+            lt.addLast(ciudadesA, [ubi, cordi])
+        elif B in ubi:
+            cordi = info[0]
+            lt.addLast(ciudadesB, [ubi, cordi])
+
+    print(ciudadesA, ciudadesB)
+
+
+
 
 
 # Funciones utilizadas para comparar elementos dentro de una lista
