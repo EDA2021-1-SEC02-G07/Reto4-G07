@@ -16,6 +16,3 @@ Este directorio contiene todo el código de base que se entrega para el funciona
 -Test
 Este directorio contiene las pruebas realizadas a los TADs, Estructuras de Datos y Algoritmos.
 
-
-Mario Alberto Ricaurte Tobón; 201922994
-Laura Valentina Jiménez Tobar; 201924116

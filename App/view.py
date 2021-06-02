@@ -26,6 +26,7 @@ def printMenu():
     print("7- Identificar mejores canales de transmisión.")
     print("8- Identificar mejor ruta de comunicación.")
     print("9- Graficar.")
+    print("0- Salir.")
 
 catalog = None
 pointFile = 'landing_points.csv'
