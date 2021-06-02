@@ -40,7 +40,12 @@ def loadData(analyzer, pointFile, connectFile, countryFile):
 def callClusterL(analyzer, point1, point2):
     ans = model.clusterL(analyzer, point1, point2)
     
-
+def getLPs(analyzer):
+    LPs = model.LPs(analyzer)
+    return LPs
+    
+def getInfCrit(analyzer):
+    infCrit = model.getInfCrit(analyzer)
 # Funciones de ordenamiento
 
 # Funciones de consulta sobre el catálogo

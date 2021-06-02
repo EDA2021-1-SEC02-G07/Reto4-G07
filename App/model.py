@@ -4,7 +4,7 @@ from DISClib.ADT.graph import gr
 from DISClib.ADT import list as lt
 from DISClib.ADT import map as mp
 from DISClib.DataStructures import mapentry as me
-from DISClib.Algorithms.Sorting import shellsort as sa
+from DISClib.Algorithms.Sorting import quicksort as quick
 from DISClib.Utils import error as error
 assert cf
 
@@ -132,7 +132,17 @@ def haversine(coord1, coord2):
 
     return km
 # Funciones de consulta
+def LPs(analyzer):
+    LPs = gr.vertices(analyzer['cables'])
+    ltDeg = lt.newList('ARRAY_LIST', cmpfunction=LPids)
+    for vertex in lt.iterator(LPs):
+        lt.addLast(ltDeg, (vertex, gr.degree(analyzer['cables'], vertex)))
 
+    ltDegO = sortDeg(ltDeg, cmpDeg)
+    return ltDegO
+    
+def getInfCrit(analyzer):
+    pass
 def clusterL(analyzer, point1, point2):
 
     data = mp.keySet(analyzer['cableNames'])
@@ -174,3 +184,11 @@ def LPids(LPid, keyvaluestop):
     else:
         return -1
 # Funciones de ordenamiento
+def cmpDeg(d1, d2):
+    result = float(d1[1]) > float(d2[1])
+    return result
+
+def sortDeg(lista, cmp):
+    lista = lista.copy()
+    quick.sort(lista, cmp)
+    return lista

@@ -7,7 +7,9 @@ from DISClib.DataStructures import mapentry as me
 from DISClib.ADT import list as lt
 assert cf
 
-
+YELLOW = '\033[93m'
+BOLD = '\033[1m'
+END = '\033[0m'
 """
 La vista se encarga de la interacción con el usuario
 Presenta el menu de opciones y por cada seleccion
@@ -60,6 +62,28 @@ while True:
         point2 = input("Ingrese el segundo landingPoint: ")
         ans = controller.callClusterL(analyzer, point1, point2)
 
+    elif int(inputs[0]) == 3:
+        LPs = controller.getLPs(analyzer)
+        print('Los 10 vértices con más Landing Points conectados son:\n')
+        i = 0
+        for vertex in lt.iterator(LPs):
+            vertexN = me.getValue(mp.get(analyzer['landingPoints'], vertex[0]))[2]
+            if i >= 10:
+                break
+            print(f'{i+1}. El vértice {YELLOW}{vertexN}{END} identificado con el número {YELLOW}{vertex[0]}{END} está conectado a {YELLOW}{vertex[1]}{END} Landing Points.')
+            i +=1
+    elif int(inputs[0]) == 4:
+        pass
+    elif int(inputs[0]) == 5:
+        infCrit = controller.getInfCrit(analyzer)
+    elif int(inputs[0]) == 6:
+        pass
+    elif int(inputs[0]) == 7:
+        pass
+    elif int(inputs[0]) == 8:
+        pass
+    elif int(inputs[0]) == 9:
+        pass
     else:
         sys.exit(0)
 sys.exit(0)
