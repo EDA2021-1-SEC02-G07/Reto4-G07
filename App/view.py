@@ -42,7 +42,7 @@ while True:
     inputs = input('Seleccione una opción para continuar\n')
     if int(inputs[0]) == 1:
         analyzer = controller.init()
-        print("Cargando información de los archivos ....")
+        print("\nCargando información de los archivos...")
         analyzer = controller.loadData(analyzer, pointFile, connectFile, countryFile)
         LPs = gr.numVertices(analyzer['cables'])
         ARCs = gr.numEdges(analyzer['cables'])
@@ -52,10 +52,11 @@ while True:
         infoL = mp.get(analyzer['paises'], last)
         infoL = infoL['value']
         print(infoL)
-        print(f'El número total de Landing Points es {LPs}.')
-        print(f'El número total de conexiones es {ARCs}.')
-        print(f'En primer Landing Point tiene el identificador {vertex}.\nNombre: {infoV[2]}.\nID: {infoV[1]}.\nLatitud: {infoV[0][1]}.\nLongitud: {infoV[0][0]}.')
-        print(f'El último país cargado es: {last}. \nPoblación: {infoL[2]}. \nUsuarios de internet: {infoL[1]}')
+        print(f'El número total de Landing Points es {YELLOW}{LPs}{END}.')
+        print(f'El número total de conexiones es {YELLOW}{ARCs}{END}.')
+        print(f'En primer Landing Point tiene el identificador {YELLOW}{vertex}{END}.\nNombre: {YELLOW}{infoV[2]}{END}.\nID: {YELLOW}{infoV[1]}{END}.\
+        \nLatitud: {YELLOW}{infoV[0][1]}{END}.\nLongitud: {YELLOW}{infoV[0][0]}{END}.')
+        print(f'El último país cargado es: {YELLOW}{last}{END}. \nPoblación: {YELLOW}{infoL[2]}{END}. \nUsuarios de internet: {YELLOW}{infoL[1]}{END}.')
     
     elif int(inputs[0]) == 2:
         point1 = input("Ingrese el primer LandingPoint: ")
@@ -77,7 +78,13 @@ while True:
     elif int(inputs[0]) == 5:
         infCrit = controller.getInfCrit(analyzer)
     elif int(inputs[0]) == 6:
-        pass
+        name = input('Escriba el nombre del Landing Point donde se presentó la falla: ')
+        fallas = controller.getFallas(analyzer, name)
+        print(f'Hay un total de {YELLOW}{fallas[0]}{END} paises afectados por la falla presentada en {YELLOW}{name}{END}.')
+        print('Los paises afectados son:')
+        for pais in lt.iterator(fallas[1]):
+            hola = pais[1]['weight']
+            print(f'{YELLOW}{pais[0]}{END}. Longitud del cable: {YELLOW}{hola}km{END}.')
     elif int(inputs[0]) == 7:
         pass
     elif int(inputs[0]) == 8:

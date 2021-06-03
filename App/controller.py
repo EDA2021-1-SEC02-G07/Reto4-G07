@@ -43,9 +43,13 @@ def callClusterL(analyzer, point1, point2):
 def getLPs(analyzer):
     LPs = model.LPs(analyzer)
     return LPs
-    
+
 def getInfCrit(analyzer):
-    infCrit = model.getInfCrit(analyzer)
+    infCrit = model.InfCrit(analyzer)
+    return infCrit
+def getFallas(analyzer, name):
+    fallas = model.fallas(analyzer, name)
+    return fallas
 # Funciones de ordenamiento
 
 # Funciones de consulta sobre el catálogo

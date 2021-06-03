@@ -3,8 +3,10 @@ import config as cf
 from DISClib.ADT.graph import gr
 from DISClib.ADT import list as lt
 from DISClib.ADT import map as mp
+from DISClib.ADT import orderedmap as om
 from DISClib.DataStructures import mapentry as me
 from DISClib.Algorithms.Sorting import quicksort as quick
+from DISClib.Algorithms.Graphs import prim as pr
 from DISClib.Utils import error as error
 assert cf
 
@@ -19,10 +21,15 @@ def newAnalyzer():
     #try:
         analyzer = {
                     'landingPoints': None,
+                    'LPnames': None,
                     'cableNames': None,
                     'cables': None}
 
         analyzer['landingPoints'] = mp.newMap(numelements=1400,
+                                    maptype='PROBING',
+                                    comparefunction=LPids)
+        
+        analyzer['LPnames'] = mp.newMap(numelements=1400,
                                     maptype='PROBING',
                                     comparefunction=LPids)
 
@@ -48,13 +55,14 @@ def newAnalyzer():
 
 
 def addLandingPoint(analyzer, point):
-    pointID = point['landing_point_id']
-   
+    pointID = int(point['landing_point_id'])
+    pointN = point['name']
     coord = coordFormat(point)
     #try:
     gr.insertVertex(analyzer['cables'], pointID)
 
     mp.put(analyzer['landingPoints'], pointID, [coord, point['id'], point['name']])
+    mp.put(analyzer['LPnames'], pointN, pointID)
     
     return analyzer
     #except Exception as exp:
@@ -63,7 +71,7 @@ def addLandingPoint(analyzer, point):
 
 def addCable(analyzer, cable):
     OG = cable['\ufefforigin']
-    origin, destination, lenght = OG, cable['destination'], distFormat(cable['cable_length'])
+    origin, destination, lenght = int(OG), int(cable['destination']), distFormat(cable['cable_length'])
 
     if not mp.contains(analyzer['cableNames'], cable['cable_id']):
         mp.put(analyzer['cableNames'], cable['cable_id'],
@@ -99,8 +107,12 @@ def coordFormat(point):
     return [lon, lat]
 
 def distFormat(length):
-    length = length.replace('km', '')
-    length = length.strip()
+    if length == 'n.a.':
+            length = 0
+    else:
+        length = length.replace('km', '').replace(',', '')
+        length = float(length)
+
     return length
 
 
@@ -138,13 +150,44 @@ def LPs(analyzer):
     for vertex in lt.iterator(LPs):
         lt.addLast(ltDeg, (vertex, gr.degree(analyzer['cables'], vertex)))
 
-    ltDegO = sortDeg(ltDeg, cmpDeg)
+    ltDegO = sortMaster(ltDeg, cmpDeg)
     return ltDegO
-    
-def getInfCrit(analyzer):
-    pass
-def clusterL(analyzer, point1, point2):
 
+def fallas(analyzer, name):
+    LPid = me.getValue(mp.get(analyzer['LPnames'], name))
+    afectados = gr.adjacents(analyzer['cables'], LPid)
+    paises = mp.newMap(37,comparefunction=LPids)
+    paisesSet = set()
+    ltSort = lt.newList('ARRAY_LIST', cmpfunction=LPids)
+    for vertex in lt.iterator(afectados):
+        pais = me.getValue(mp.get(analyzer['landingPoints'], vertex))[2]
+        pais = pais.split(',')[1].strip()
+        paisesSet.add(pais)
+        arc = gr.getEdge(analyzer['cables'], LPid, vertex)
+        if mp.contains(paises, pais):
+            lt.addLast(me.getValue(mp.get(paises, pais)), arc)
+        if not mp.contains(paises, pais):
+            mp.put(paises, pais, lt.newList('ARRAY_LIST', cmpfunction=LPids))
+            lt.addLast(me.getValue(mp.get(paises, pais)), arc)
+    
+    for pais in paisesSet:
+        ltP = me.getValue(mp.get(paises, pais))
+        ltPO = sortMaster(ltP, cmpArcW)
+        mp.put(paises, pais, ltPO)
+        primero = lt.firstElement(ltPO)
+        lt.addLast(ltSort, (pais, primero))
+    
+    ltFinal = sortMaster(ltSort, cmpWtuple)
+    print(paisesSet)
+    print(len(list(paisesSet)))
+    return len(list(paisesSet)), ltFinal
+    
+def InfCrit(analyzer):
+    inf = pr.PrimMST(analyzer['cables'])
+    print(inf['pq'])
+    print(om.valueSet(inf))
+
+def clusterL(analyzer, point1, point2):
     data = mp.keySet(analyzer['cableNames'])
     for cable in lt.iterator(data):
         print(cable)
@@ -188,7 +231,13 @@ def cmpDeg(d1, d2):
     result = float(d1[1]) > float(d2[1])
     return result
 
-def sortDeg(lista, cmp):
+def cmpArcW(w1, w2):
+    result = float(w1['weight']) > float(w2['weight'])
+    return result
+def cmpWtuple(a1, a2):
+    result = float(a1[1]['weight']) > float(a2[1]['weight'])
+    return result
+def sortMaster(lista, cmp):
     lista = lista.copy()
     quick.sort(lista, cmp)
     return lista
