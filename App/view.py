@@ -77,6 +77,10 @@ while True:
         pass
     elif int(inputs[0]) == 5:
         infCrit = controller.getInfCrit(analyzer)
+        print(f'Hay un total de {YELLOW}{infCrit[0]}{END} nodos conectados a la red de expansión mínima.')
+        print(f'La distancia total de la expansión mínima es {YELLOW}{infCrit[1]}km{END}.')
+        print(f'La conexión más larga es {YELLOW}{infCrit[2][1]}km{END}.')
+        print(f'La conexión más corta es {YELLOW}{infCrit[3][1]}km{END}.')
     elif int(inputs[0]) == 6:
         name = input('Escriba el nombre del Landing Point donde se presentó la falla: ')
         fallas = controller.getFallas(analyzer, name)

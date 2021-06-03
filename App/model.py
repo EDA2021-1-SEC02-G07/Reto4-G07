@@ -7,6 +7,7 @@ from DISClib.ADT import orderedmap as om
 from DISClib.DataStructures import mapentry as me
 from DISClib.Algorithms.Sorting import quicksort as quick
 from DISClib.Algorithms.Graphs import prim as pr
+from DISClib.Algorithms.Graphs import bellmanford as bell
 from DISClib.Utils import error as error
 assert cf
 
@@ -107,8 +108,9 @@ def coordFormat(point):
     return [lon, lat]
 
 def distFormat(length):
+    import math
     if length == 'n.a.':
-            length = 0
+            length = round(math.log(12) * (10**4))
     else:
         length = length.replace('km', '').replace(',', '')
         length = float(length)
@@ -178,14 +180,22 @@ def fallas(analyzer, name):
         lt.addLast(ltSort, (pais, primero))
     
     ltFinal = sortMaster(ltSort, cmpWtuple)
-    print(paisesSet)
-    print(len(list(paisesSet)))
+
     return len(list(paisesSet)), ltFinal
     
 def InfCrit(analyzer):
     inf = pr.PrimMST(analyzer['cables'])
-    print(inf['pq'])
-    print(om.valueSet(inf))
+    LPs = gr.vertices(analyzer['cables'])
+    tree = lt.newList('ARRAY_LIST', cmpfunction=LPids)
+    total = 0
+    for vertex in lt.iterator(LPs):
+        distance = bell.distTo(inf, vertex)
+        if distance != 0: #El algoritmo prim pone 0, asumimos que los que se mantienen en 0 son porque no pertenecen al MST
+            lt.addLast(tree, (vertex, distance))
+            total += distance
+    treeO = sortMaster(tree, cmpDeg)
+
+    return lt.size(tree), total, lt.firstElement(treeO), lt.lastElement(treeO)
 
 def clusterL(analyzer, point1, point2):
     data = mp.keySet(analyzer['cableNames'])
