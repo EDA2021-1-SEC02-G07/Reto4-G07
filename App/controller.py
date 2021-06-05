@@ -39,6 +39,10 @@ def loadData(analyzer, pointFile, connectFile, countryFile):
 # Funciones para la carga de datos
 def callClusterL(analyzer, point1, point2):
     ans = model.clusterL(analyzer, point1, point2)
+    return ans
+
+def getDistPais(analyzer, A, B):
+    ans = model.distPais(analyzer, A, B)
     
 def getLPs(analyzer):
     LPs = model.LPs(analyzer)

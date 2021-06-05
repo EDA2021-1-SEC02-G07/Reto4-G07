@@ -4,11 +4,14 @@ from DISClib.ADT.graph import gr
 from DISClib.ADT import list as lt
 from DISClib.ADT import map as mp
 from DISClib.ADT import orderedmap as om
+from DISClib.ADT import stack as st
 from DISClib.DataStructures import mapentry as me
 from DISClib.Algorithms.Sorting import quicksort as quick
 from DISClib.Algorithms.Graphs import prim as pr
 from DISClib.Algorithms.Graphs import bellmanford as bell
 from DISClib.Utils import error as error
+from DISClib.Algorithms.Graphs import scc as scc
+from DISClib.Algorithms.Graphs import dijsktra as dj
 assert cf
 
 """
@@ -89,15 +92,12 @@ def addCable(analyzer, cable):
     return analyzer
 
 def addPais(analyzer, pais):
-    
+    coor = [float(pais['CapitalLongitude']), float(pais['CapitalLatitude'])]
+    #lon, lat
     if not mp.contains(analyzer['paises'], pais['CountryName']):
-        mp.put(analyzer['paises'], pais['CountryName'], [pais['CapitalName'], pais['Internet users'], pais['Population']])
-        #primera posiciòn contiene capital, segunda numero de usuarios de internet y la tercera contiene poblaciòn 
-        
-  
-def addDistance(analyzer, cable):
-    #añadir distancia y asi poder agregar un grafo con peso
-    print(cable)
+        mp.put(analyzer['paises'], pais['CountryName'], [pais['CapitalName'], pais['Internet users'], pais['Population'], coor])
+        #primera posiciòn contiene capital, segunda numero de usuarios de internet, la tercera contiene poblaciòn, corrdenadas capital
+    
 
 
 # Funciones para agregar informacion al catalogo
@@ -198,30 +198,58 @@ def InfCrit(analyzer):
     return lt.size(tree), total, lt.firstElement(treeO), lt.lastElement(treeO)
 
 def clusterL(analyzer, point1, point2):
-    data = mp.keySet(analyzer['cableNames'])
-    for cable in lt.iterator(data):
-        print(cable)
-        info = mp.get(analyzer['cableNames'], cable)
-        print(info)
+    data = analyzer['cables']
+    ciclos = scc.KosarajuSCC(data)
+    #numero de componenetes conectados
+    cone= scc.connectedComponents(ciclos)
+    #conectados
+    lista = gr.vertices(data)
+    r = mp.keySet(analyzer['LPnames'])
+    for i in lt.iterator(r):
+        if point1 in i:
+            id1 = (mp.get(analyzer['LPnames'], i))['value']
+        elif point2 in i:
+            id2 = (mp.get(analyzer['LPnames'], i))['value']
+    
+    ans = scc.stronglyConnected(ciclos,id1, id2)
+    
+    return cone, ans
 
 
 def distPais(analyzer, A, B):
-    pass
-    data = mp.valueSet(analyzer['landingPoints'])
     grafo = analyzer['cables']
-    #distancia de ciudades a 
-    
-    for info in lt.iterator(data):
-        ubi = info[2]
-        ubi = ubi.lower()
-        if A in ubi:
-            cordi = info[0]
-            lt.addLast(ciudadesA, [ubi, cordi])
-        elif B in ubi:
-            cordi = info[0]
-            lt.addLast(ciudadesB, [ubi, cordi])
+    nombres = mp.keySet(analyzer['LPnames'])
+    #add dist de cap a ciudades, agrega al grafo
+    ori1, ori2 = (mp.get(analyzer['paises'], A))['value'][3], (mp.get(analyzer['paises'], B))['value'][3]
+    gr.insertVertex(grafo, 1)
+    gr.insertVertex(grafo,2)
 
-    print(ciudadesA, ciudadesB)
+    for cable in lt.iterator(nombres):
+        if A in cable:
+            id = (mp.get(analyzer['LPnames'], cable))['value']
+            cor = (mp.get(analyzer['landingPoints'],id))['value'][0]
+            peso = haversine(ori1, cor)
+            gr.addEdge(grafo, 1,id, peso )
+            
+        elif B in cable:
+            id = (mp.get(analyzer['LPnames'], cable))['value']
+            cor = (mp.get(analyzer['landingPoints'],id))['value'][0]
+            peso = haversine(ori2, cor)
+            gr.addEdge(grafo, 2,id, peso )
+            
+    #ruta con distancia de cada una
+    #distancia total
+    ruta = dj.Dijkstra(grafo, 1)
+    camino = dj.pathTo(ruta, 2)
+    ans = printRute(ruta, camino)
+    print('Para recorrer en total: ', round(dj.distTo(ruta,2),2), ' km.')
+    
+
+def printRute(ruta,camino):
+    while st.isEmpty(camino)!= True:
+        va =st.pop(camino)
+        print(' De ', va['vertexA'], ' a ', va['vertexB'], 'recorriendo una distancia de ', va['weight'], ' km.')
+
 
 
 

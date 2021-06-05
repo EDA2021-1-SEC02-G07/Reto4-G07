@@ -59,9 +59,12 @@ while True:
         print(f'El último país cargado es: {YELLOW}{last}{END}. \nPoblación: {YELLOW}{infoL[2]}{END}. \nUsuarios de internet: {YELLOW}{infoL[1]}{END}.')
     
     elif int(inputs[0]) == 2:
+        print('Nota, ingrese en mayúsculas las primeras letras\n')
         point1 = input("Ingrese el primer LandingPoint: ")
         point2 = input("Ingrese el segundo landingPoint: ")
         ans = controller.callClusterL(analyzer, point1, point2)
+        print(f'\nEl número total de clústeres es de: {ans[0]}')
+        print(f'Los Landing Points pertenecen al mismo clúster: {ans[1]}')
 
     elif int(inputs[0]) == 3:
         LPs = controller.getLPs(analyzer)
@@ -74,7 +77,11 @@ while True:
             print(f'{i+1}. El vértice {YELLOW}{vertexN}{END} identificado con el número {YELLOW}{vertex[0]}{END} está conectado a {YELLOW}{vertex[1]}{END} Landing Points.')
             i +=1
     elif int(inputs[0]) == 4:
-        pass
+        A = input('Inserte el primer país: ')
+        B = input('Inserte el segundo país: ')
+        print('\n')
+        ans = controller.getDistPais(analyzer, A, B)
+
     elif int(inputs[0]) == 5:
         infCrit = controller.getInfCrit(analyzer)
         print(f'Hay un total de {YELLOW}{infCrit[0]}{END} nodos conectados a la red de expansión mínima.')
