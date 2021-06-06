@@ -9,6 +9,7 @@ assert cf
 
 YELLOW = '\033[93m'
 BOLD = '\033[1m'
+RED = '\033[91m'
 END = '\033[0m'
 """
 La vista se encarga de la interacción con el usuario
@@ -67,15 +68,19 @@ while True:
         print(f'Los Landing Points pertenecen al mismo clúster: {ans[1]}')
 
     elif int(inputs[0]) == 3:
-        LPs = controller.getLPs(analyzer)
-        print('Los 10 vértices con más Landing Points conectados son:\n')
-        i = 0
-        for vertex in lt.iterator(LPs):
-            vertexN = me.getValue(mp.get(analyzer['landingPoints'], vertex[0]))[2]
-            if i >= 10:
-                break
-            print(f'{i+1}. El vértice {YELLOW}{vertexN}{END} identificado con el número {YELLOW}{vertex[0]}{END} está conectado a {YELLOW}{vertex[1]}{END} Landing Points.')
-            i +=1
+        try:
+            LPs = controller.getLPs(analyzer)
+            print('Los 10 vértices con más Landing Points conectados son:\n')
+            i = 0
+            for vertex in lt.iterator(LPs):
+                vertexN = me.getValue(mp.get(analyzer['landingPoints'], vertex[0]))[2]
+                if i >= 10:
+                    break
+                print(f'{i+1}. El vértice {YELLOW}{vertexN}{END} identificado con el número {YELLOW}{vertex[0]}{END} está conectado a {YELLOW}{vertex[1]}{END} Landing Points.')
+                i +=1
+        except:
+            print(f'{RED}{BOLD}Se ha producido un error.{END}')
+
     elif int(inputs[0]) == 4:
         A = input('Inserte el primer país: ')
         B = input('Inserte el segundo país: ')
@@ -83,19 +88,25 @@ while True:
         ans = controller.getDistPais(analyzer, A, B)
 
     elif int(inputs[0]) == 5:
-        infCrit = controller.getInfCrit(analyzer)
-        print(f'Hay un total de {YELLOW}{infCrit[0]}{END} nodos conectados a la red de expansión mínima.')
-        print(f'La distancia total de la expansión mínima es {YELLOW}{infCrit[1]}km{END}.')
-        print(f'La conexión más larga es {YELLOW}{infCrit[2][1]}km{END}.')
-        print(f'La conexión más corta es {YELLOW}{infCrit[3][1]}km{END}.')
+        try:
+            infCrit = controller.getInfCrit(analyzer)
+            print(f'Hay un total de {YELLOW}{infCrit[0]}{END} nodos conectados a la red de expansión mínima.')
+            print(f'La distancia total de la expansión mínima es {YELLOW}{infCrit[1]}km{END}.')
+            print(f'La conexión más larga es {YELLOW}{infCrit[2][1]}km{END}.')
+            print(f'La conexión más corta es {YELLOW}{infCrit[3][1]}km{END}.')
+        except:
+            print(f'{RED}{BOLD}Se ha producido un error.{END}')
     elif int(inputs[0]) == 6:
         name = input('Escriba el nombre del Landing Point donde se presentó la falla: ')
-        fallas = controller.getFallas(analyzer, name)
-        print(f'Hay un total de {YELLOW}{fallas[0]}{END} paises afectados por la falla presentada en {YELLOW}{name}{END}.')
-        print('Los paises afectados son:')
-        for pais in lt.iterator(fallas[1]):
-            hola = pais[1]['weight']
-            print(f'{YELLOW}{pais[0]}{END}. Longitud del cable: {YELLOW}{hola}km{END}.')
+        try:
+            fallas = controller.getFallas(analyzer, name)
+            print(f'Hay un total de {YELLOW}{fallas[0]}{END} paises afectados por la falla presentada en {YELLOW}{name}{END}.')
+            print('Los paises afectados son:')
+            for pais in lt.iterator(fallas[1]):
+                hola = pais[1]['weight']
+                print(f'{YELLOW}{pais[0]}{END}. Longitud del cable: {YELLOW}{hola}km{END}.')
+        except:
+            print(f'{RED}{BOLD}Se ha producido un error.{END}')
     elif int(inputs[0]) == 7:
         pass
     elif int(inputs[0]) == 8:

@@ -22,7 +22,7 @@ los mismos.
 # Construccion de modelos
 def newAnalyzer():
 
-    #try:
+    try:
         analyzer = {
                     'landingPoints': None,
                     'LPnames': None,
@@ -54,42 +54,44 @@ def newAnalyzer():
                                               comparefunction=LPids)
         
         return analyzer
-    #except Exception as exp:
-        #error.reraise(exp, 'model:newAnalyzer')
+    except Exception as exp:
+        error.reraise(exp, 'model:newAnalyzer')
 
 
 def addLandingPoint(analyzer, point):
     pointID = int(point['landing_point_id'])
     pointN = point['name']
     coord = coordFormat(point)
-    #try:
-    gr.insertVertex(analyzer['cables'], pointID)
+    try:
+        gr.insertVertex(analyzer['cables'], pointID)
 
-    mp.put(analyzer['landingPoints'], pointID, [coord, point['id'], point['name']])
-    mp.put(analyzer['LPnames'], pointN, pointID)
-    
-    return analyzer
-    #except Exception as exp:
-        #error.reraise(exp, 'model:addPoint')
+        mp.put(analyzer['landingPoints'], pointID, [coord, point['id'], point['name']])
+        mp.put(analyzer['LPnames'], pointN, pointID)
+        
+        return analyzer
+    except Exception as exp:
+        error.reraise(exp, 'model:addLP')
 
 
 def addCable(analyzer, cable):
     OG = cable['\ufefforigin']
     origin, destination, lenght = int(OG), int(cable['destination']), distFormat(cable['cable_length'])
+    try: 
+        if not mp.contains(analyzer['cableNames'], cable['cable_id']):
+            mp.put(analyzer['cableNames'], cable['cable_id'],
+                                    [[(OG, cable['destination'])], cable['cable_rfs'], cable['owners'], cable['capacityTBPS']])
+        if mp.contains(analyzer['cableNames'], cable['cable_id']):
+            value = me.getValue(mp.get(analyzer['cableNames'], cable['cable_id']))
+            value[0].append((OG, cable['destination']))
+            mp.put(analyzer['cableNames'], cable['cable_id'], value)
 
-    if not mp.contains(analyzer['cableNames'], cable['cable_id']):
-        mp.put(analyzer['cableNames'], cable['cable_id'],
-                                [[(OG, cable['destination'])], cable['cable_rfs'], cable['owners'], cable['capacityTBPS']])
-    if mp.contains(analyzer['cableNames'], cable['cable_id']):
-        value = me.getValue(mp.get(analyzer['cableNames'], cable['cable_id']))
-        value[0].append((OG, cable['destination']))
-        mp.put(analyzer['cableNames'], cable['cable_id'], value)
+        edge = gr.getEdge(analyzer['cables'], origin, destination)
+        if edge is None:
+            gr.addEdge(analyzer['cables'], origin, destination, lenght)
 
-    edge = gr.getEdge(analyzer['cables'], origin, destination)
-    if edge is None:
-        gr.addEdge(analyzer['cables'], origin, destination, lenght)
-
-    return analyzer
+        return analyzer
+    except Exception as exp:
+        error.reraise(exp, 'model:addCable')
 
 def addPais(analyzer, pais):
     coor = [float(pais['CapitalLongitude']), float(pais['CapitalLatitude'])]
@@ -149,53 +151,65 @@ def haversine(coord1, coord2):
 def LPs(analyzer):
     LPs = gr.vertices(analyzer['cables'])
     ltDeg = lt.newList('ARRAY_LIST', cmpfunction=LPids)
-    for vertex in lt.iterator(LPs):
-        lt.addLast(ltDeg, (vertex, gr.degree(analyzer['cables'], vertex)))
+    try:
+        for vertex in lt.iterator(LPs):
+            lt.addLast(ltDeg, (vertex, gr.degree(analyzer['cables'], vertex)))
 
-    ltDegO = sortMaster(ltDeg, cmpDeg)
-    return ltDegO
+        ltDegO = sortMaster(ltDeg, cmpDeg)
+        return ltDegO
+        
+    except Exception as exp:
+        error.reraise(exp, 'model:LPs')
 
 def fallas(analyzer, name):
-    LPid = me.getValue(mp.get(analyzer['LPnames'], name))
+    LPid = me.getValue(mp.get(analyzer['LPnames'], name))#id del LP.
     afectados = gr.adjacents(analyzer['cables'], LPid)
     paises = mp.newMap(37,comparefunction=LPids)
     paisesSet = set()
     ltSort = lt.newList('ARRAY_LIST', cmpfunction=LPids)
-    for vertex in lt.iterator(afectados):
-        pais = me.getValue(mp.get(analyzer['landingPoints'], vertex))[2]
-        pais = pais.split(',')[1].strip()
-        paisesSet.add(pais)
-        arc = gr.getEdge(analyzer['cables'], LPid, vertex)
-        if mp.contains(paises, pais):
-            lt.addLast(me.getValue(mp.get(paises, pais)), arc)
-        if not mp.contains(paises, pais):
-            mp.put(paises, pais, lt.newList('ARRAY_LIST', cmpfunction=LPids))
-            lt.addLast(me.getValue(mp.get(paises, pais)), arc)
-    
-    for pais in paisesSet:
-        ltP = me.getValue(mp.get(paises, pais))
-        ltPO = sortMaster(ltP, cmpArcW)
-        mp.put(paises, pais, ltPO)
-        primero = lt.firstElement(ltPO)
-        lt.addLast(ltSort, (pais, primero))
-    
-    ltFinal = sortMaster(ltSort, cmpWtuple)
+    try:
+        for vertex in lt.iterator(afectados):
+            pais = me.getValue(mp.get(analyzer['landingPoints'], vertex))[2]
+            pais = pais.split(',')[1].strip() #Saca el país, quita la ciudad.
+            paisesSet.add(pais)
+            arc = gr.getEdge(analyzer['cables'], LPid, vertex)
+            if mp.contains(paises, pais):
+                lt.addLast(me.getValue(mp.get(paises, pais)), arc)
+            if not mp.contains(paises, pais):
+                mp.put(paises, pais, lt.newList('ARRAY_LIST', cmpfunction=LPids))
+                lt.addLast(me.getValue(mp.get(paises, pais)), arc)
+        
+        for pais in paisesSet:
+            ltP = me.getValue(mp.get(paises, pais))
+            ltPO = sortMaster(ltP, cmpArcW)
+            mp.put(paises, pais, ltPO)#Pone la lista en orden.
+            primero = lt.firstElement(ltPO)#solo compara el cable más largo de ese país.
+            lt.addLast(ltSort, (pais, primero))
+        
+        ltFinal = sortMaster(ltSort, cmpWtuple)
 
-    return len(list(paisesSet)), ltFinal
-    
+        return len(list(paisesSet)), ltFinal
+
+    except Exception as exp:
+        error.reraise(exp, 'model:Fallas')
+
 def InfCrit(analyzer):
     inf = pr.PrimMST(analyzer['cables'])
     LPs = gr.vertices(analyzer['cables'])
     tree = lt.newList('ARRAY_LIST', cmpfunction=LPids)
     total = 0
-    for vertex in lt.iterator(LPs):
-        distance = bell.distTo(inf, vertex)
-        if distance != 0: #El algoritmo prim pone 0, asumimos que los que se mantienen en 0 son porque no pertenecen al MST
-            lt.addLast(tree, (vertex, distance))
-            total += distance
-    treeO = sortMaster(tree, cmpDeg)
+    try:
+        for vertex in lt.iterator(LPs):
+            distance = bell.distTo(inf, vertex)
+            if distance != 0: #El algoritmo prim pone 0, asumimos que los que se mantienen en 0 son porque no pertenecen al MST
+                lt.addLast(tree, (vertex, distance))
+                total += distance
+        treeO = sortMaster(tree, cmpDeg)
 
-    return lt.size(tree), total, lt.firstElement(treeO), lt.lastElement(treeO)
+        return lt.size(tree), total, lt.firstElement(treeO), lt.lastElement(treeO)
+
+    except Exception as exp:
+        error.reraise(exp, 'model:InfCrit')
 
 def clusterL(analyzer, point1, point2):
     data = analyzer['cables']
